@@ -1,7 +1,8 @@
-import { List, ActionPanel, Action, getPreferenceValues, Icon } from "@raycast/api";
+import { List, getPreferenceValues, Icon } from "@raycast/api";
 import { useState, useMemo } from "react";
 import fs from "fs";
-import { Preferences, JDType, JDIndex, getIndexPath, readIndex, searchIndex, resolveEntryPath } from "./utils";
+import { Preferences, JDType, JDIndex, getIndexPath, readIndex, searchIndex } from "./utils";
+import { JDListItem } from "./jd-list-item";
 
 interface SearchCommandProps {
   type: JDType;
@@ -40,17 +41,7 @@ export default function SearchCommand({ type, placeholder, sectionTitle }: Searc
     <List onSearchTextChange={setSearchTerm} searchBarPlaceholder={placeholder} throttle>
       <List.Section title={sectionTitle}>
         {results.map((result) => (
-          <List.Item
-            key={result.key}
-            title={result.name}
-            subtitle={result.key}
-            actions={
-              <ActionPanel>
-                <Action.ShowInFinder path={resolveEntryPath(prefs.rootFolder, index, result.key)} />
-                <Action.CopyToClipboard title="Copy JD Key" content={result.key} />
-              </ActionPanel>
-            }
-          />
+          <JDListItem key={result.key} result={result} rootFolder={prefs.rootFolder} index={index} />
         ))}
       </List.Section>
     </List>

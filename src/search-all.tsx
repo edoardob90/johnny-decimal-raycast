@@ -1,8 +1,9 @@
-import { List, ActionPanel, Action, getPreferenceValues, Icon, Color } from "@raycast/api";
+import { List, getPreferenceValues, Icon, Color } from "@raycast/api";
 import { useState, useMemo } from "react";
 import fs from "fs";
 import Fuse from "fuse.js";
-import { Preferences, JDSearchResult, getIndexPath, readIndex, resolveEntryPath } from "./utils";
+import { Preferences, JDSearchResult, getIndexPath, readIndex } from "./utils";
+import { JDListItem } from "./jd-list-item";
 
 const TYPE_COLORS: Record<string, Color> = {
   area: Color.Blue,
@@ -57,17 +58,12 @@ export default function Command() {
     <List onSearchTextChange={setSearchTerm} searchBarPlaceholder="Search all Johnny.Decimal entries..." throttle>
       <List.Section title="All Entries">
         {results.map((result) => (
-          <List.Item
+          <JDListItem
             key={result.key}
-            title={result.name}
-            subtitle={result.key}
+            result={result}
+            rootFolder={prefs.rootFolder}
+            index={index}
             accessories={[{ tag: { value: result.type, color: TYPE_COLORS[result.type] } }]}
-            actions={
-              <ActionPanel>
-                <Action.ShowInFinder path={resolveEntryPath(prefs.rootFolder, index, result.key)} />
-                <Action.CopyToClipboard title="Copy JD Key" content={result.key} />
-              </ActionPanel>
-            }
           />
         ))}
       </List.Section>
