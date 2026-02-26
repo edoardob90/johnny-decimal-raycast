@@ -26,3 +26,9 @@ The difference is likely imperceptible for an average system (a few hundreds ite
 2. Set your **Root Folder** preference to your JD root directory
 3. Run **Rebuild Index** to generate the `.jdex.yaml` file
 4. Use any search command to find and open your JD entries
+
+## License
+
+This extension is licensed under [MIT](LICENSE).
+
+The [Johnny.Decimal](https://johnnydecimal.com/) system and its terminology are licensed under [CC BY-NC-SA 4.0](https://johnnydecimal.com/00-09-site-administration/01-about/01.02-licence/).
