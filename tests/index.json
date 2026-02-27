@@ -1,17 +1,21 @@
 {
-  "00-09": {
-    "type": "area",
-    "name": "My Area",
-    "parent": null
-  },
-  "00": {
-    "type": "category",
-    "name": "System management",
-    "parent": "00-09"
-  },
-  "00.01": {
-    "type": "id",
-    "name": "Inbox",
-    "parent": "00"
+  "created": "2026-02-27T00:00:00.000Z",
+  "updated": "2026-02-27T00:00:00.000Z",
+  "entries": {
+    "00-09": {
+      "type": "area",
+      "name": "My Area",
+      "parent": null
+    },
+    "00": {
+      "type": "category",
+      "name": "System management",
+      "parent": "00-09"
+    },
+    "00.01": {
+      "type": "id",
+      "name": "Inbox",
+      "parent": "00"
+    }
   }
 }

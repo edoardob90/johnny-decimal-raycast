@@ -1,7 +1,7 @@
 import { List, getPreferenceValues, Icon, Color, ActionPanel, Action } from "@raycast/api";
 import { useMemo } from "react";
 import fs from "fs";
-import { Preferences, getIndexPath, readIndex, checkIndex } from "./utils";
+import { Preferences, getIndexPath, checkIndex } from "./utils";
 
 export default function Command() {
   const prefs = getPreferenceValues<Preferences>();
@@ -10,8 +10,9 @@ export default function Command() {
   const { result, entryCount, error } = useMemo(() => {
     if (!fs.existsSync(indexPath)) return { result: null, entryCount: 0, error: "No index found" };
     try {
-      const index = readIndex(indexPath);
-      return { result: checkIndex(prefs.rootFolder, index), entryCount: Object.keys(index).length, error: null };
+      const raw = JSON.parse(fs.readFileSync(indexPath, "utf-8"));
+      const index = "entries" in raw ? raw.entries : raw;
+      return { result: checkIndex(prefs.rootFolder, index, raw), entryCount: Object.keys(index).length, error: null };
     } catch (e) {
       return { result: null, entryCount: 0, error: String(e) };
     }

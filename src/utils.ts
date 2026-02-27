@@ -17,10 +17,16 @@ const JDEntrySchema = z
     description: z.string().optional(),
   })
   .strict();
+const JDIndexFileSchema = z.object({
+  created: z.string().datetime(),
+  updated: z.string().datetime(),
+  entries: z.record(z.string(), JDEntrySchema),
+});
 
 export type JDType = z.infer<typeof JDTypeSchema>;
 export type JDEntry = z.infer<typeof JDEntrySchema>;
 export type JDIndex = Record<string, JDEntry>;
+export type JDIndexFile = z.infer<typeof JDIndexFileSchema>;
 
 export interface JDSearchResult {
   key: string;
@@ -89,19 +95,28 @@ export function buildIndex(rootFolder: string, existingIndex?: JDIndex): JDIndex
   return index;
 }
 
-export function writeIndex(index: JDIndex, filePath: string): void {
-  const sorted = Object.keys(index)
+export function writeIndex(entries: JDIndex, filePath: string, created?: string): void {
+  const now = new Date().toISOString();
+  const sorted = Object.keys(entries)
     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }))
     .reduce<JDIndex>((acc, key) => {
-      acc[key] = index[key];
+      acc[key] = entries[key];
       return acc;
     }, {});
-  fs.writeFileSync(filePath, JSON.stringify(sorted, null, 2) + "\n", "utf-8");
+  const file: JDIndexFile = { created: created ?? now, updated: now, entries: sorted };
+  fs.writeFileSync(filePath, JSON.stringify(file, null, 2) + "\n", "utf-8");
 }
 
 export function readIndex(filePath: string): JDIndex {
   const content = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(content) as JDIndex;
+  const parsed = JSON.parse(content);
+  // Migration: handle old flat format (no wrapper)
+  return "entries" in parsed ? (parsed.entries as JDIndex) : (parsed as JDIndex);
+}
+
+export function readIndexFile(filePath: string): JDIndexFile {
+  const content = fs.readFileSync(filePath, "utf-8");
+  return JSON.parse(content) as JDIndexFile;
 }
 
 export function getIndexPath(prefs: Preferences): string {
@@ -135,8 +150,16 @@ export interface CheckResult {
  * Validate index consistency: check for structural validity, orphan parent references,
  * entries missing on disk, and folders on disk missing from the index.
  */
-export function checkIndex(rootFolder: string, index: JDIndex): CheckResult {
+export function checkIndex(rootFolder: string, index: JDIndex, rawFile?: unknown): CheckResult {
   const result: CheckResult = { invalidEntries: [], orphanParents: [], missingOnDisk: [], missingInIndex: [] };
+
+  // Check file-level structure (created/updated timestamps)
+  if (rawFile !== undefined) {
+    const parsed = JDIndexFileSchema.safeParse(rawFile);
+    if (!parsed.success) {
+      result.invalidEntries.push({ key: "<file>", error: parsed.error.issues[0].message });
+    }
+  }
 
   // Check structural validity of each entry
   for (const [key, entry] of Object.entries(index)) {
@@ -197,8 +220,8 @@ export function resolveEntryPath(rootFolder: string, index: JDIndex, key: string
 }
 
 export function updateEntryDescription(indexPath: string, key: string, description: string): void {
-  const index = readIndex(indexPath);
-  if (!(key in index)) return;
-  index[key].description = description || undefined;
-  writeIndex(index, indexPath);
+  const file = readIndexFile(indexPath);
+  if (!(key in file.entries)) return;
+  file.entries[key].description = description || undefined;
+  writeIndex(file.entries, indexPath, file.created);
 }
