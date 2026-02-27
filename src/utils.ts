@@ -52,6 +52,19 @@ function parseFolderName(folderName: string): { key: string; name: string } {
   };
 }
 
+const JD_KEY_PATTERNS: RegExp[] = [
+  // area: 10-19
+  /^\d{2}-\d{2}$/,
+  // category: 11
+  /^\d{2}$/,
+  // id: 11.01 | 11.01+A3 | 22.00+0001
+  /^\d{2}\.\d{2}(\+[A-Za-z0-9]+)?$/,
+];
+
+const isValidJDKey = (key: string, level: number): boolean => {
+  return JD_KEY_PATTERNS[level]?.test(key) ?? false;
+};
+
 /**
  * Build a JDIndex by walking the filesystem 3 levels deep from rootFolder.
  * Level 0 → areas (e.g. "10-19 Finance")
@@ -74,6 +87,7 @@ export function buildIndex(rootFolder: string, existingIndex?: JDIndex): JDIndex
 
     for (const entry of entries) {
       const { key, name } = parseFolderName(entry);
+      if (!isValidJDKey(key, level)) continue;
       index[key] = {
         type: typeByLevel[level],
         name,
@@ -191,6 +205,7 @@ export function checkIndex(rootFolder: string, index: JDIndex, rawFile?: unknown
     });
     for (const entry of entries) {
       const { key, name } = parseFolderName(entry);
+      if (!isValidJDKey(key, level)) continue;
       if (!(key in index)) {
         result.missingInIndex.push({ key, name, type: typeByLevel[level] });
       }
