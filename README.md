@@ -19,6 +19,7 @@ The difference is likely imperceptible for an average system (a few hundreds ite
 | **Search All** | Fuzzy search across all entries, including descriptions |
 | **Rebuild Index** | Rebuild `.jdex.json` from your folder structure |
 | **Check Index** | Validate index consistency against the filesystem |
+| **Switch System** | Switch between registered JD systems |
 
 ## Index file
 
@@ -48,6 +49,14 @@ The index file can also be edited manually (e.g. to bulk-add descriptions), but 
 2. Set your **Root Folder** preference to your JD root directory
 3. Run **Rebuild Index** to generate the `.jdex.json` file
 4. Use any search command to find and open your JD entries
+
+## Multiple systems
+
+The extension supports multiple JD systems. Systems are registered automatically when you run **Rebuild Index**:
+
+1. Set **Root Folder** to System A → run **Rebuild Index** (registers System A, makes it active)
+2. Set **Root Folder** to System B → run **Rebuild Index** (registers System B, makes it active)
+3. Use **Switch System** to toggle between them — all search and check commands follow the active system
 
 ## Preferences
 
