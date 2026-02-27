@@ -1,15 +1,30 @@
-import { getPreferenceValues, showToast, Toast } from "@raycast/api";
+import { LocalStorage, getPreferenceValues, showToast, Toast } from "@raycast/api";
 import fs from "fs";
-import { Preferences, buildIndex, readIndexFile, writeIndex, getIndexPath } from "./utils";
+import path from "path";
+import {
+  Preferences,
+  buildIndex,
+  readIndexFile,
+  writeIndex,
+  getIndexPath,
+  registerSystem,
+  ACTIVE_SYSTEM_KEY,
+} from "./utils";
 
 export default async function Command() {
   const prefs = getPreferenceValues<Preferences>();
+  // Always rebuild whatever prefs.rootFolder points to — this is the registration mechanism.
+  const rootFolder = prefs.rootFolder;
   const indexPath = getIndexPath(prefs);
 
   try {
     const existingFile = fs.existsSync(indexPath) ? readIndexFile(indexPath) : undefined;
-    const index = buildIndex(prefs.rootFolder, existingFile?.entries);
+    const index = buildIndex(rootFolder, existingFile?.entries);
     writeIndex(index, indexPath, existingFile?.created);
+
+    const system = { label: path.basename(rootFolder), rootFolder, indexPath };
+    await registerSystem(system);
+    await LocalStorage.setItem(ACTIVE_SYSTEM_KEY, rootFolder);
 
     const count = Object.keys(index).length;
     await showToast({

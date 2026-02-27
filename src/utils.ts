@@ -1,3 +1,4 @@
+import { LocalStorage } from "@raycast/api";
 import fs from "fs";
 import path from "path";
 import { z } from "zod";
@@ -217,6 +218,36 @@ export function resolveEntryPath(rootFolder: string, index: JDIndex, key: string
   }
 
   return path.join(rootFolder, ...segments);
+}
+
+export const ACTIVE_SYSTEM_KEY = "activeSystemRoot";
+export const CONFIGURED_SYSTEMS_KEY = "configuredSystems";
+
+export interface ConfiguredSystem {
+  label: string;
+  rootFolder: string;
+  indexPath: string;
+}
+
+export async function getConfiguredSystems(): Promise<ConfiguredSystem[]> {
+  const raw = await LocalStorage.getItem<string>(CONFIGURED_SYSTEMS_KEY);
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw) as ConfiguredSystem[];
+  } catch {
+    return [];
+  }
+}
+
+export async function registerSystem(system: ConfiguredSystem): Promise<void> {
+  const systems = await getConfiguredSystems();
+  const idx = systems.findIndex((s) => s.rootFolder === system.rootFolder);
+  if (idx >= 0) {
+    systems[idx] = system;
+  } else {
+    systems.push(system);
+  }
+  await LocalStorage.setItem(CONFIGURED_SYSTEMS_KEY, JSON.stringify(systems));
 }
 
 export function updateEntryDescription(indexPath: string, key: string, description: string): void {

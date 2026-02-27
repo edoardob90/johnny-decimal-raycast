@@ -1,22 +1,36 @@
-import { List, getPreferenceValues, Icon, Color, ActionPanel, Action } from "@raycast/api";
-import { useMemo } from "react";
+import { List, getPreferenceValues, Icon, Color, ActionPanel, Action, LocalStorage } from "@raycast/api";
+import { useState, useMemo, useEffect } from "react";
 import fs from "fs";
-import { Preferences, getIndexPath, checkIndex } from "./utils";
+import { Preferences, getIndexPath, checkIndex, ACTIVE_SYSTEM_KEY, getConfiguredSystems } from "./utils";
 
 export default function Command() {
   const prefs = getPreferenceValues<Preferences>();
-  const indexPath = getIndexPath(prefs);
+
+  const [activeRoot, setActiveRoot] = useState(prefs.rootFolder);
+  const [activeIndexPath, setActiveIndexPath] = useState(getIndexPath(prefs));
+
+  useEffect(() => {
+    LocalStorage.getItem<string>(ACTIVE_SYSTEM_KEY).then(async (storedRoot) => {
+      if (!storedRoot) return;
+      const systems = await getConfiguredSystems();
+      const match = systems.find((s) => s.rootFolder === storedRoot);
+      if (match) {
+        setActiveRoot(match.rootFolder);
+        setActiveIndexPath(match.indexPath);
+      }
+    });
+  }, []);
 
   const { result, entryCount, error } = useMemo(() => {
-    if (!fs.existsSync(indexPath)) return { result: null, entryCount: 0, error: "No index found" };
+    if (!fs.existsSync(activeIndexPath)) return { result: null, entryCount: 0, error: "No index found" };
     try {
-      const raw = JSON.parse(fs.readFileSync(indexPath, "utf-8"));
+      const raw = JSON.parse(fs.readFileSync(activeIndexPath, "utf-8"));
       const index = "entries" in raw ? raw.entries : raw;
-      return { result: checkIndex(prefs.rootFolder, index, raw), entryCount: Object.keys(index).length, error: null };
+      return { result: checkIndex(activeRoot, index, raw), entryCount: Object.keys(index).length, error: null };
     } catch (e) {
       return { result: null, entryCount: 0, error: String(e) };
     }
-  }, [indexPath, prefs.rootFolder]);
+  }, [activeIndexPath, activeRoot]);
 
   if (error || !result) {
     return (
@@ -50,25 +64,25 @@ export default function Command() {
             title="Invalid Entries"
             subtitle="Structural validation failures"
             items={result.invalidEntries.map((e) => ({ key: e.key, detail: e.error }))}
-            indexPath={indexPath}
+            indexPath={activeIndexPath}
           />
           <IssueSection
             title="Orphan Parents"
             subtitle="Parent key not found in index"
             items={result.orphanParents.map((e) => ({ key: e.key, detail: `parent: ${e.parent}` }))}
-            indexPath={indexPath}
+            indexPath={activeIndexPath}
           />
           <IssueSection
             title="Missing on Disk"
             subtitle="In index but folder not found"
             items={result.missingOnDisk.map((key) => ({ key, detail: "folder not found" }))}
-            indexPath={indexPath}
+            indexPath={activeIndexPath}
           />
           <IssueSection
             title="Missing in Index"
             subtitle="Folder on disk but not indexed"
             items={result.missingInIndex.map((e) => ({ key: e.key, detail: `${e.type}: ${e.name}` }))}
-            indexPath={indexPath}
+            indexPath={activeIndexPath}
           />
         </>
       )}

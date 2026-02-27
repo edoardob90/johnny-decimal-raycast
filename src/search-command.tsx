@@ -1,7 +1,16 @@
-import { List, getPreferenceValues, Icon } from "@raycast/api";
-import { useState, useMemo } from "react";
+import { List, getPreferenceValues, Icon, LocalStorage } from "@raycast/api";
+import { useState, useMemo, useEffect } from "react";
 import fs from "fs";
-import { Preferences, JDType, JDIndex, getIndexPath, readIndex, searchIndex } from "./utils";
+import {
+  Preferences,
+  JDType,
+  JDIndex,
+  getIndexPath,
+  readIndex,
+  searchIndex,
+  ACTIVE_SYSTEM_KEY,
+  getConfiguredSystems,
+} from "./utils";
 import { JDListItem } from "./jd-list-item";
 
 interface SearchCommandProps {
@@ -13,12 +22,26 @@ interface SearchCommandProps {
 export default function SearchCommand({ type, placeholder, sectionTitle }: SearchCommandProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const prefs = getPreferenceValues<Preferences>();
-  const indexPath = getIndexPath(prefs);
+
+  const [activeRoot, setActiveRoot] = useState(prefs.rootFolder);
+  const [activeIndexPath, setActiveIndexPath] = useState(getIndexPath(prefs));
+
+  useEffect(() => {
+    LocalStorage.getItem<string>(ACTIVE_SYSTEM_KEY).then(async (storedRoot) => {
+      if (!storedRoot) return;
+      const systems = await getConfiguredSystems();
+      const match = systems.find((s) => s.rootFolder === storedRoot);
+      if (match) {
+        setActiveRoot(match.rootFolder);
+        setActiveIndexPath(match.indexPath);
+      }
+    });
+  }, []);
 
   const index: JDIndex | null = useMemo(() => {
-    if (!fs.existsSync(indexPath)) return null;
-    return readIndex(indexPath);
-  }, [indexPath]);
+    if (!fs.existsSync(activeIndexPath)) return null;
+    return readIndex(activeIndexPath);
+  }, [activeIndexPath]);
 
   const results = useMemo(() => {
     if (!index) return [];
@@ -44,9 +67,9 @@ export default function SearchCommand({ type, placeholder, sectionTitle }: Searc
           <JDListItem
             key={result.key}
             result={result}
-            rootFolder={prefs.rootFolder}
+            rootFolder={activeRoot}
             index={index}
-            indexPath={indexPath}
+            indexPath={activeIndexPath}
           />
         ))}
       </List.Section>

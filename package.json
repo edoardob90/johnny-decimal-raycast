@@ -19,14 +19,14 @@
       "type": "directory",
       "required": true,
       "title": "Root Folder",
-      "description": "Path to your Johnny.Decimal root folder"
+      "description": "Path to your active Johnny.Decimal root folder. To register multiple systems, point this to each root and run Rebuild Index — then use Switch System to move between them."
     },
     {
       "name": "indexFilePath",
       "type": "file",
       "required": false,
       "title": "Index File",
-      "description": "Path to the JSON index file (defaults to .jdex.json in root folder)"
+      "description": "Custom path for this system's .jdex.json index (defaults to root folder). Each registered system stores its own index."
     },
     {
       "name": "searchSensitivity",
@@ -86,6 +86,12 @@
       "name": "check-index",
       "title": "Check Index",
       "description": "Validate index consistency against the filesystem.",
+      "mode": "view"
+    },
+    {
+      "name": "switch-system",
+      "title": "Switch System",
+      "description": "Switch between registered Johnny.Decimal systems.",
       "mode": "view"
     }
   ],
