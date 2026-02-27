@@ -36,9 +36,18 @@
       "description": "Controls how fuzzy the Search All matching is.",
       "default": "balanced",
       "data": [
-        { "title": "Strict", "value": "strict" },
-        { "title": "Balanced", "value": "balanced" },
-        { "title": "Loose", "value": "loose" }
+        {
+          "title": "Strict",
+          "value": "strict"
+        },
+        {
+          "title": "Balanced",
+          "value": "balanced"
+        },
+        {
+          "title": "Loose",
+          "value": "loose"
+        }
       ]
     }
   ],
@@ -77,13 +86,14 @@
       "name": "check-index",
       "title": "Check Index",
       "description": "Validate index consistency against the filesystem.",
-      "mode": "no-view"
+      "mode": "view"
     }
   ],
   "dependencies": {
     "@raycast/api": "^1.104.7",
     "@raycast/utils": "^1.17.0",
-    "fuse.js": "^7.1.0"
+    "fuse.js": "^7.1.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@raycast/eslint-config": "^2.0.4",

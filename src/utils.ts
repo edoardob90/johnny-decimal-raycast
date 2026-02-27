@@ -1,20 +1,25 @@
 import fs from "fs";
 import path from "path";
+import { z } from "zod";
+
 export interface Preferences {
   rootFolder: string;
   indexFilePath?: string;
   searchSensitivity?: "strict" | "balanced" | "loose";
 }
 
-export type JDType = "area" | "category" | "id";
+const JDTypeSchema = z.enum(["area", "category", "id"]);
+const JDEntrySchema = z
+  .object({
+    type: JDTypeSchema,
+    name: z.string().min(1),
+    parent: z.string().nullable(),
+    description: z.string().optional(),
+  })
+  .strict();
 
-export interface JDEntry {
-  type: JDType;
-  name: string;
-  parent: string | null;
-  description?: string;
-}
-
+export type JDType = z.infer<typeof JDTypeSchema>;
+export type JDEntry = z.infer<typeof JDEntrySchema>;
 export type JDIndex = Record<string, JDEntry>;
 
 export interface JDSearchResult {
@@ -120,17 +125,26 @@ export function searchIndex(index: JDIndex, type: JDType, term: string): JDSearc
 }
 
 export interface CheckResult {
+  invalidEntries: Array<{ key: string; error: string }>;
   orphanParents: Array<{ key: string; parent: string }>;
   missingOnDisk: string[];
   missingInIndex: Array<{ key: string; name: string; type: JDType }>;
 }
 
 /**
- * Validate index consistency: check for orphan parent references,
+ * Validate index consistency: check for structural validity, orphan parent references,
  * entries missing on disk, and folders on disk missing from the index.
  */
 export function checkIndex(rootFolder: string, index: JDIndex): CheckResult {
-  const result: CheckResult = { orphanParents: [], missingOnDisk: [], missingInIndex: [] };
+  const result: CheckResult = { invalidEntries: [], orphanParents: [], missingOnDisk: [], missingInIndex: [] };
+
+  // Check structural validity of each entry
+  for (const [key, entry] of Object.entries(index)) {
+    const parsed = JDEntrySchema.safeParse(entry);
+    if (!parsed.success) {
+      result.invalidEntries.push({ key, error: parsed.error.issues[0].message });
+    }
+  }
 
   // Check orphan parents and missing on disk
   for (const [key, entry] of Object.entries(index)) {
