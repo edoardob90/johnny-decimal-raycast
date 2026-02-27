@@ -1,10 +1,9 @@
 import fs from "fs";
 import path from "path";
-import yaml from "js-yaml";
-
 export interface Preferences {
   rootFolder: string;
   indexFilePath?: string;
+  searchSensitivity?: "strict" | "balanced" | "loose";
 }
 
 export type JDType = "area" | "category" | "id";
@@ -13,6 +12,7 @@ export interface JDEntry {
   type: JDType;
   name: string;
   parent: string | null;
+  description?: string;
 }
 
 export type JDIndex = Record<string, JDEntry>;
@@ -22,6 +22,7 @@ export interface JDSearchResult {
   type: JDType;
   name: string;
   parent: string | null;
+  description?: string;
 }
 
 /**
@@ -45,7 +46,7 @@ function parseFolderName(folderName: string): { key: string; name: string } {
  * Level 1 → categories (e.g. "11 Tax")
  * Level 2 → IDs (e.g. "11.01 Returns")
  */
-export function buildIndex(rootFolder: string): JDIndex {
+export function buildIndex(rootFolder: string, existingIndex?: JDIndex): JDIndex {
   const index: JDIndex = {};
   const typeByLevel: JDType[] = ["area", "category", "id"];
 
@@ -71,24 +72,38 @@ export function buildIndex(rootFolder: string): JDIndex {
   }
 
   walk(rootFolder, 0, null);
+
+  if (existingIndex) {
+    for (const key of Object.keys(index)) {
+      if (existingIndex[key]?.description) {
+        index[key].description = existingIndex[key].description;
+      }
+    }
+  }
+
   return index;
 }
 
 export function writeIndex(index: JDIndex, filePath: string): void {
-  const content = yaml.dump(index, { sortKeys: true, quotingType: '"', forceQuotes: true, flowLevel: 1 });
-  fs.writeFileSync(filePath, content, "utf-8");
+  const sorted = Object.keys(index)
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }))
+    .reduce<JDIndex>((acc, key) => {
+      acc[key] = index[key];
+      return acc;
+    }, {});
+  fs.writeFileSync(filePath, JSON.stringify(sorted, null, 2) + "\n", "utf-8");
 }
 
 export function readIndex(filePath: string): JDIndex {
   const content = fs.readFileSync(filePath, "utf-8");
-  return yaml.load(content) as JDIndex;
+  return JSON.parse(content) as JDIndex;
 }
 
 export function getIndexPath(prefs: Preferences): string {
   if (prefs.indexFilePath) {
     return prefs.indexFilePath;
   }
-  return path.join(prefs.rootFolder, ".jdex.yaml");
+  return path.join(prefs.rootFolder, ".jdex.json");
 }
 
 export function searchIndex(index: JDIndex, type: JDType, term: string): JDSearchResult[] {
@@ -165,4 +180,11 @@ export function resolveEntryPath(rootFolder: string, index: JDIndex, key: string
   }
 
   return path.join(rootFolder, ...segments);
+}
+
+export function updateEntryDescription(indexPath: string, key: string, description: string): void {
+  const index = readIndex(indexPath);
+  if (!(key in index)) return;
+  index[key].description = description || undefined;
+  writeIndex(index, indexPath);
 }

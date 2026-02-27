@@ -30,7 +30,7 @@ export default function SearchCommand({ type, placeholder, sectionTitle }: Searc
       <List>
         <List.EmptyView
           title="No index found"
-          description='Run the "Rebuild Index" command first to build your .jdex.yaml file.'
+          description='Run the "Rebuild Index" command first to build your .jdex.json file.'
           icon={Icon.Warning}
         />
       </List>
@@ -41,7 +41,13 @@ export default function SearchCommand({ type, placeholder, sectionTitle }: Searc
     <List onSearchTextChange={setSearchTerm} searchBarPlaceholder={placeholder} throttle>
       <List.Section title={sectionTitle}>
         {results.map((result) => (
-          <JDListItem key={result.key} result={result} rootFolder={prefs.rootFolder} index={index} />
+          <JDListItem
+            key={result.key}
+            result={result}
+            rootFolder={prefs.rootFolder}
+            index={index}
+            indexPath={indexPath}
+          />
         ))}
       </List.Section>
     </List>

@@ -11,10 +11,17 @@ const TYPE_COLORS: Record<string, Color> = {
   id: Color.Orange,
 };
 
+const SENSITIVITY_THRESHOLDS: Record<string, number> = {
+  strict: 0.2,
+  balanced: 0.4,
+  loose: 0.6,
+};
+
 export default function Command() {
   const [searchTerm, setSearchTerm] = useState("");
   const prefs = getPreferenceValues<Preferences>();
   const indexPath = getIndexPath(prefs);
+  const threshold = SENSITIVITY_THRESHOLDS[prefs.searchSensitivity ?? "balanced"];
 
   const { allEntries, index } = useMemo(() => {
     if (!fs.existsSync(indexPath)) return { allEntries: [] as JDSearchResult[], index: null };
@@ -29,12 +36,13 @@ export default function Command() {
     () =>
       new Fuse(allEntries, {
         keys: [
-          { name: "key", weight: 0.6 },
-          { name: "name", weight: 0.4 },
+          { name: "key", weight: 0.5 },
+          { name: "name", weight: 0.35 },
+          { name: "description", weight: 0.15 },
         ],
-        threshold: 0.4,
+        threshold,
       }),
-    [allEntries],
+    [allEntries, threshold],
   );
 
   const results = useMemo(() => {
@@ -47,7 +55,7 @@ export default function Command() {
       <List>
         <List.EmptyView
           title="No index found"
-          description='Run the "Rebuild Index" command first to build your .jdex.yaml file.'
+          description='Run the "Rebuild Index" command first to build your .jdex.json file.'
           icon={Icon.Warning}
         />
       </List>
@@ -63,6 +71,7 @@ export default function Command() {
             result={result}
             rootFolder={prefs.rootFolder}
             index={index}
+            indexPath={indexPath}
             accessories={[{ tag: { value: result.type, color: TYPE_COLORS[result.type] } }]}
           />
         ))}

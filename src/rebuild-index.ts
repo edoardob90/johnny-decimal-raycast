@@ -1,12 +1,14 @@
 import { getPreferenceValues, showToast, Toast } from "@raycast/api";
-import { Preferences, buildIndex, writeIndex, getIndexPath } from "./utils";
+import fs from "fs";
+import { Preferences, buildIndex, readIndex, writeIndex, getIndexPath } from "./utils";
 
 export default async function Command() {
   const prefs = getPreferenceValues<Preferences>();
   const indexPath = getIndexPath(prefs);
 
   try {
-    const index = buildIndex(prefs.rootFolder);
+    const existingIndex = fs.existsSync(indexPath) ? readIndex(indexPath) : undefined;
+    const index = buildIndex(prefs.rootFolder, existingIndex);
     writeIndex(index, indexPath);
 
     const count = Object.keys(index).length;
