@@ -18,8 +18,8 @@ const JDEntrySchema = z
   })
   .strict();
 const JDIndexFileSchema = z.object({
-  created: z.string().datetime(),
-  updated: z.string().datetime(),
+  created: z.iso.datetime(),
+  updated: z.iso.datetime(),
   entries: z.record(z.string(), JDEntrySchema),
 });
 
