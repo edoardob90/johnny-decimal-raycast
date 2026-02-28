@@ -59,7 +59,6 @@ The extension supports multiple JD systems. Systems are registered automatically
 | Preference | Description |
 |------------|-------------|
 | **Root Folder** | Path to your JD root directory (required) |
-| **Index File** | Custom path for `.jdex.json` (defaults to root folder) |
 | **Search Sensitivity** | Fuzzy match strictness for Search All: Strict, Balanced (default), Loose |
 
 ## License

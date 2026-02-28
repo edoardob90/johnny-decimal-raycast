@@ -21,13 +21,6 @@
       "description": "Path to your active Johnny.Decimal root folder. To register multiple systems, point this to each root and run Rebuild Index — then use Switch System to move between them."
     },
     {
-      "name": "indexFilePath",
-      "type": "file",
-      "required": false,
-      "title": "Index File",
-      "description": "Custom path for this system's .jdex.json index (defaults to root folder). Each registered system stores its own index."
-    },
-    {
       "name": "searchSensitivity",
       "type": "dropdown",
       "required": false,

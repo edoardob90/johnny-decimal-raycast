@@ -5,7 +5,6 @@ import { z } from "zod";
 
 export interface Preferences {
   rootFolder: string;
-  indexFilePath?: string;
   searchSensitivity?: "strict" | "balanced" | "loose";
 }
 
@@ -135,9 +134,6 @@ export function readIndexFile(filePath: string): JDIndexFile {
 }
 
 export function getIndexPath(prefs: Preferences): string {
-  if (prefs.indexFilePath) {
-    return prefs.indexFilePath;
-  }
   return path.join(prefs.rootFolder, ".jdex.json");
 }
 
@@ -236,6 +232,7 @@ export function resolveEntryPath(rootFolder: string, index: JDIndex, key: string
 }
 
 export const ACTIVE_SYSTEM_KEY = "activeSystemRoot";
+export const LAST_PREF_ROOT_KEY = "lastPrefRoot";
 export const CONFIGURED_SYSTEMS_KEY = "configuredSystems";
 
 export interface ConfiguredSystem {

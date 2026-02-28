@@ -9,6 +9,7 @@ import {
   readIndex,
   searchIndex,
   ACTIVE_SYSTEM_KEY,
+  LAST_PREF_ROOT_KEY,
   getConfiguredSystems,
 } from "./utils";
 import { JDListItem } from "./jd-list-item";
@@ -28,15 +29,24 @@ export default function SearchCommand({ type, placeholder, sectionTitle }: Searc
   const [activeIndexPath, setActiveIndexPath] = useState(getIndexPath(prefs));
 
   useEffect(() => {
-    LocalStorage.getItem<string>(ACTIVE_SYSTEM_KEY).then(async (storedRoot) => {
-      if (!storedRoot) return;
+    (async () => {
+      const [lastPrefRoot, storedRoot] = await Promise.all([
+        LocalStorage.getItem<string>(LAST_PREF_ROOT_KEY),
+        LocalStorage.getItem<string>(ACTIVE_SYSTEM_KEY),
+      ]);
+      if (lastPrefRoot !== prefs.rootFolder) {
+        await LocalStorage.setItem(LAST_PREF_ROOT_KEY, prefs.rootFolder);
+        await LocalStorage.setItem(ACTIVE_SYSTEM_KEY, prefs.rootFolder);
+        return;
+      }
+      if (!storedRoot || storedRoot === prefs.rootFolder) return;
       const systems = await getConfiguredSystems();
       const match = systems.find((s) => s.rootFolder === storedRoot);
       if (match) {
         setActiveRoot(match.rootFolder);
         setActiveIndexPath(match.indexPath);
       }
-    });
+    })();
   }, []);
 
   const index: JDIndex | null = useMemo(() => {

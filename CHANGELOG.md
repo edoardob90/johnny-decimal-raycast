@@ -1,5 +1,13 @@
 # Johnny Decimal Changelog
 
+## [Simplify index path & fix rootFolder change detection] - {PR_MERGE_DATE}
+
+### Removed
+- **Index File** preference — the index is now always `rootFolder/.jdex.json`, with no custom path option
+
+### Fixed
+- Changing the `rootFolder` preference no longer leaves commands pointing at a stale index from the previous root
+
 ## [Open Index & UX Improvements] - {PR_MERGE_DATE}
 
 ### Added

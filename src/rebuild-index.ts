@@ -9,6 +9,7 @@ import {
   getIndexPath,
   registerSystem,
   ACTIVE_SYSTEM_KEY,
+  LAST_PREF_ROOT_KEY,
 } from "./utils";
 
 export default async function Command() {
@@ -25,6 +26,7 @@ export default async function Command() {
     const system = { label: path.basename(rootFolder), rootFolder, indexPath };
     await registerSystem(system);
     await LocalStorage.setItem(ACTIVE_SYSTEM_KEY, rootFolder);
+    await LocalStorage.setItem(LAST_PREF_ROOT_KEY, rootFolder);
 
     const count = Object.keys(index).length;
     await showToast({

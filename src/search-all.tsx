@@ -2,7 +2,15 @@ import { List, getPreferenceValues, Icon, Color, LocalStorage } from "@raycast/a
 import { useState, useMemo, useEffect } from "react";
 import fs from "fs";
 import Fuse from "fuse.js";
-import { Preferences, JDSearchResult, getIndexPath, readIndex, ACTIVE_SYSTEM_KEY, getConfiguredSystems } from "./utils";
+import {
+  Preferences,
+  JDSearchResult,
+  getIndexPath,
+  readIndex,
+  ACTIVE_SYSTEM_KEY,
+  LAST_PREF_ROOT_KEY,
+  getConfiguredSystems,
+} from "./utils";
 import { JDListItem } from "./jd-list-item";
 
 const TYPE_COLORS: Record<string, Color> = {
@@ -27,15 +35,24 @@ export default function Command() {
   const [activeIndexPath, setActiveIndexPath] = useState(getIndexPath(prefs));
 
   useEffect(() => {
-    LocalStorage.getItem<string>(ACTIVE_SYSTEM_KEY).then(async (storedRoot) => {
-      if (!storedRoot) return;
+    (async () => {
+      const [lastPrefRoot, storedRoot] = await Promise.all([
+        LocalStorage.getItem<string>(LAST_PREF_ROOT_KEY),
+        LocalStorage.getItem<string>(ACTIVE_SYSTEM_KEY),
+      ]);
+      if (lastPrefRoot !== prefs.rootFolder) {
+        await LocalStorage.setItem(LAST_PREF_ROOT_KEY, prefs.rootFolder);
+        await LocalStorage.setItem(ACTIVE_SYSTEM_KEY, prefs.rootFolder);
+        return;
+      }
+      if (!storedRoot || storedRoot === prefs.rootFolder) return;
       const systems = await getConfiguredSystems();
       const match = systems.find((s) => s.rootFolder === storedRoot);
       if (match) {
         setActiveRoot(match.rootFolder);
         setActiveIndexPath(match.indexPath);
       }
-    });
+    })();
   }, []);
 
   const { allEntries, index } = useMemo(() => {
