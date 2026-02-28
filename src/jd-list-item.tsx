@@ -59,7 +59,7 @@ export function JDListItem({
       actions={
         <ActionPanel>
           <Action.ShowInFinder path={entryPath} />
-          <Action.Open title="Open in Finder" target={entryPath} />
+          <Action.Open title="Open" target={entryPath} />
           <Action.CopyToClipboard title="Copy JD Key" content={result.key} />
           <Action.Push
             title="Edit Description"

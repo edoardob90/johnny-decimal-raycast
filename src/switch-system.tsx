@@ -27,7 +27,7 @@ export default function Command() {
   }
 
   return (
-    <List isLoading={isLoading} navigationTitle="Switch System">
+    <List isLoading={isLoading}>
       {!isLoading && systems.length === 0 && (
         <List.EmptyView
           title="No systems registered"

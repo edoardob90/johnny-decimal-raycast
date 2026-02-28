@@ -6,8 +6,7 @@
   "icon": "extension-icon.png",
   "author": "edoardo_baldi",
   "platforms": [
-    "macOS",
-    "Windows"
+    "macOS"
   ],
   "categories": [
     "Productivity"

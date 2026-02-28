@@ -1,13 +1,8 @@
 # Raycast Johnny.Decimal
 
 A [Raycast](https://raycast.com) extension to navigate and search your [Johnny.Decimal](https://johnnydecimal.com/) system.
-Inspired by [Raycast Store's extension](https://github.com/raycast/extensions/tree/2a72a867f262d0118a8057640b7baf7d93765aea/extensions/johnny-decimal).
 
-## Where it improves
-
-The original extension walks the filesystem recursively on every keystroke.
-This version builds a JSON index (`.jdex.json`) once, then searches in-memory — no disk I/O per keystroke.
-The difference is likely imperceptible for an average system (a few hundreds items at most), but it could become a bottleneck for large, multi-area systems (1000+ items).
+Builds a JSON index (`.jdex.json`) once, then searches in-memory — fast and responsive even for large systems.
 
 ## Commands
 
