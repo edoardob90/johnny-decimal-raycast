@@ -39,9 +39,31 @@ Descriptions survive a **Rebuild Index** — the command merges them back into t
 
 The index file can also be edited manually (e.g. to bulk-add descriptions), but it's recommended to run **Check Index** afterwards to verify consistency with the filesystem.
 
+## Installation
+
+This extension is not yet published to the Raycast Store. To install it locally:
+
+1. Clone this repository and install dependencies:
+   ```bash
+   git clone https://github.com/edoardob90/johnny-decimal-raycast.git
+   cd johnny-decimal-raycast
+   npm install
+   ```
+
+2. Build the extension:
+   ```bash
+   npm run build
+   ```
+
+3. Open Raycast, search for **Import Extension**, and select the cloned folder.
+
+The extension will appear permanently in Raycast. To get updates, pull the latest changes and run `npm run build` again.
+
+> **Developing?** Run `npm run dev` instead of building — the extension will be available in Raycast with hot reload while the process is running. See the [Raycast developer docs](https://developers.raycast.com/basics/getting-started) for more.
+
 ## Setup
 
-1. Install the extension in Raycast
+1. Install the extension in Raycast (see [Installation](#installation) above)
 2. Set your **Root Folder** preference to your JD root directory
 3. Run **Rebuild Index** to generate the `.jdex.json` file
 4. Use any search command to find and open your JD entries
