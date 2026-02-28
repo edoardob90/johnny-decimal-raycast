@@ -21,6 +21,7 @@ interface SearchCommandProps {
 
 export default function SearchCommand({ type, placeholder, sectionTitle }: SearchCommandProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [refreshToken, setRefreshToken] = useState(0);
   const prefs = getPreferenceValues<Preferences>();
 
   const [activeRoot, setActiveRoot] = useState(prefs.rootFolder);
@@ -41,7 +42,7 @@ export default function SearchCommand({ type, placeholder, sectionTitle }: Searc
   const index: JDIndex | null = useMemo(() => {
     if (!fs.existsSync(activeIndexPath)) return null;
     return readIndex(activeIndexPath);
-  }, [activeIndexPath]);
+  }, [activeIndexPath, refreshToken]);
 
   const results = useMemo(() => {
     if (!index) return [];
@@ -70,6 +71,7 @@ export default function SearchCommand({ type, placeholder, sectionTitle }: Searc
             rootFolder={activeRoot}
             index={index}
             indexPath={activeIndexPath}
+            onDescriptionSaved={() => setRefreshToken((t) => t + 1)}
           />
         ))}
       </List.Section>

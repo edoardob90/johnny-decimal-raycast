@@ -19,6 +19,7 @@ const SENSITIVITY_THRESHOLDS: Record<string, number> = {
 
 export default function Command() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [refreshToken, setRefreshToken] = useState(0);
   const prefs = getPreferenceValues<Preferences>();
   const threshold = SENSITIVITY_THRESHOLDS[prefs.searchSensitivity ?? "balanced"];
 
@@ -44,7 +45,7 @@ export default function Command() {
       .map(([key, entry]) => ({ key, ...entry }))
       .sort((a, b) => a.key.localeCompare(b.key, undefined, { numeric: true, sensitivity: "base" }));
     return { allEntries: entries, index: idx };
-  }, [activeIndexPath]);
+  }, [activeIndexPath, refreshToken]);
 
   const fuse = useMemo(
     () =>
@@ -87,6 +88,7 @@ export default function Command() {
             index={index}
             indexPath={activeIndexPath}
             accessories={[{ tag: { value: result.type, color: TYPE_COLORS[result.type] } }]}
+            onDescriptionSaved={() => setRefreshToken((t) => t + 1)}
           />
         ))}
       </List.Section>

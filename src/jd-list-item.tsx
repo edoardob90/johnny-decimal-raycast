@@ -5,10 +5,12 @@ function EditDescriptionForm({
   entryKey,
   currentDescription,
   indexPath,
+  onSaved,
 }: {
   entryKey: string;
   currentDescription?: string;
   indexPath: string;
+  onSaved?: () => void;
 }) {
   const { pop } = useNavigation();
 
@@ -21,6 +23,7 @@ function EditDescriptionForm({
             onSubmit={async (values: { description: string }) => {
               updateEntryDescription(indexPath, entryKey, values.description);
               await showToast({ style: Toast.Style.Success, title: "Description updated" });
+              onSaved?.();
               pop();
             }}
           />
@@ -38,12 +41,14 @@ export function JDListItem({
   index,
   indexPath,
   accessories,
+  onDescriptionSaved,
 }: {
   result: JDSearchResult;
   rootFolder: string;
   index: JDIndex;
   indexPath: string;
   accessories?: List.Item.Props["accessories"];
+  onDescriptionSaved?: () => void;
 }) {
   const entryPath = resolveEntryPath(rootFolder, index, result.key);
 
@@ -69,6 +74,7 @@ export function JDListItem({
                 entryKey={result.key}
                 currentDescription={result.description}
                 indexPath={indexPath}
+                onSaved={onDescriptionSaved}
               />
             }
           />
