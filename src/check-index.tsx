@@ -57,6 +57,12 @@ export default function Command() {
           title="Index is consistent"
           description={`${entryCount} entries verified.`}
           icon={{ source: Icon.CheckCircle, tintColor: Color.Green }}
+          actions={
+            <ActionPanel>
+              <Action.Open title="Open Index File" target={activeIndexPath} />
+              <Action.ShowInFinder path={activeIndexPath} />
+            </ActionPanel>
+          }
         />
       ) : (
         <>

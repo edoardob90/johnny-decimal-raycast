@@ -14,6 +14,7 @@ Builds a JSON index (`.jdex.json`) once, then searches in-memory — fast and re
 | **Search All** | Fuzzy search across all entries, including descriptions |
 | **Rebuild Index** | Rebuild `.jdex.json` from your folder structure |
 | **Check Index** | Validate index consistency against the filesystem |
+| **Open Index** | Open the `.jdex.json` index file with the default app |
 | **Switch System** | Switch between registered JD systems |
 
 ## Index file

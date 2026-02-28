@@ -88,6 +88,12 @@
       "mode": "view"
     },
     {
+      "name": "open-index",
+      "title": "Open Index",
+      "description": "Open the Johnny.Decimal index file.",
+      "mode": "no-view"
+    },
+    {
       "name": "switch-system",
       "title": "Switch System",
       "description": "Switch between registered Johnny.Decimal systems.",
