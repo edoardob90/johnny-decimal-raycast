@@ -87,4 +87,4 @@ The extension supports multiple JD systems. Systems are registered automatically
 
 This extension is licensed under [MIT](LICENSE).
 
-The [Johnny.Decimal](https://johnnydecimal.com/) system and its terminology are licensed under [CC BY-NC-SA 4.0](https://johnnydecimal.com/00-09-site-administration/01-about/01.02-licence/).
+The [Johnny.Decimal](https://johnnydecimal.com/) system was created by Johnny Noble and Lucy Butcher and is licensed under [CC BY-NC-SA 4.0](https://johnnydecimal.com/00-09-site-administration/01-about/01.02-licence/). This extension implements the JD concept independently and does not reproduce any licensed content.
