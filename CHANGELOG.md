@@ -1,5 +1,16 @@
 # Johnny Decimal Changelog
 
+## [Improve Check Index diagnostics] - {PR_MERGE_DATE}
+
+### Added
+- **Check Index** now has a "Rebuild Index" action in the action panel of every issue item and on the "no index found" empty view — no need to navigate away to fix a stale index
+
+### Improved
+- **Check Index** validation errors are now human-readable: `missing required field 'parent'` instead of `Invalid input: expected string, received undefined`
+- Each invalid field on the same entry is reported as its own row, so no information is hidden
+- "Missing on Disk" entries now show the folder name (e.g. `"Inbox" not found`) instead of a generic `folder not found`
+- Structurally invalid entries are skipped from the orphan-parent and missing-on-disk checks, eliminating cascading duplicates from a single root cause
+
 ## [Simplify index path & fix rootFolder change detection] - {PR_MERGE_DATE}
 
 ### Removed

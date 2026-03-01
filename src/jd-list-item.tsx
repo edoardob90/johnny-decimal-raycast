@@ -1,5 +1,6 @@
 import { List, ActionPanel, Action, Form, useNavigation, showToast, Toast, Icon } from "@raycast/api";
-import { JDIndex, JDSearchResult, resolveEntryPath, updateEntryDescription } from "./utils";
+import type { JDIndex } from "./schema";
+import { JDSearchResult, resolveEntryPath, updateEntryDescription } from "./utils";
 
 function EditDescriptionForm({
   entryKey,

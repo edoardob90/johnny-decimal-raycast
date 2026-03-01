@@ -1,10 +1,9 @@
 import { List, getPreferenceValues, Icon, LocalStorage } from "@raycast/api";
 import { useState, useMemo, useEffect } from "react";
 import fs from "fs";
+import type { JDType, JDIndex } from "./schema";
 import {
   Preferences,
-  JDType,
-  JDIndex,
   getIndexPath,
   readIndex,
   searchIndex,

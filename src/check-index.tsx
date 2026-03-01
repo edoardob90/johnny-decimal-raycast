@@ -1,4 +1,14 @@
-import { List, getPreferenceValues, Icon, Color, ActionPanel, Action, LocalStorage } from "@raycast/api";
+import {
+  List,
+  getPreferenceValues,
+  Icon,
+  Color,
+  ActionPanel,
+  Action,
+  LocalStorage,
+  launchCommand,
+  LaunchType,
+} from "@raycast/api";
 import { useState, useMemo, useEffect } from "react";
 import fs from "fs";
 import {
@@ -55,6 +65,15 @@ export default function Command() {
           title={error === "No index found" ? "No index found" : "Check failed"}
           description={error === "No index found" ? 'Run "Rebuild Index" first.' : (error ?? undefined)}
           icon={Icon.Warning}
+          actions={
+            <ActionPanel>
+              <Action
+                title="Rebuild Index"
+                icon={Icon.ArrowClockwise}
+                onAction={() => launchCommand({ name: "rebuild-index", type: LaunchType.UserInitiated })}
+              />
+            </ActionPanel>
+          }
         />
       </List>
     );
@@ -97,7 +116,7 @@ export default function Command() {
           <IssueSection
             title="Missing on Disk"
             subtitle="In index but folder not found"
-            items={result.missingOnDisk.map((key) => ({ key, detail: "folder not found" }))}
+            items={result.missingOnDisk.map((e) => ({ key: e.key, detail: `"${e.name}" not found` }))}
             indexPath={activeIndexPath}
           />
           <IssueSection
@@ -128,13 +147,18 @@ function IssueSection({
     <List.Section title={title} subtitle={subtitle}>
       {items.map((item) => (
         <List.Item
-          key={item.key}
+          key={`${item.key}:${item.detail}`}
           title={item.key}
           subtitle={item.detail}
           icon={{ source: Icon.XMarkCircle, tintColor: Color.Red }}
           actions={
             <ActionPanel>
               <Action.Open title="Open Index File" target={indexPath} />
+              <Action
+                title="Rebuild Index"
+                icon={Icon.ArrowClockwise}
+                onAction={() => launchCommand({ name: "rebuild-index", type: LaunchType.UserInitiated })}
+              />
               <Action.CopyToClipboard title="Copy Key" content={item.key} />
               <Action.ShowInFinder path={indexPath} />
             </ActionPanel>

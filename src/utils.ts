@@ -1,32 +1,14 @@
 import { LocalStorage } from "@raycast/api";
 import fs from "fs";
 import path from "path";
-import { z } from "zod";
+import { JDIndexFileSchema } from "./schema";
+
+import type { JDEntry, JDIndex, JDIndexFile, JDType } from "./schema";
 
 export interface Preferences {
   rootFolder: string;
   searchSensitivity?: "strict" | "balanced" | "loose";
 }
-
-const JDTypeSchema = z.enum(["area", "category", "id"]);
-const JDEntrySchema = z
-  .object({
-    type: JDTypeSchema,
-    name: z.string().min(1),
-    parent: z.string().nullable(),
-    description: z.string().optional(),
-  })
-  .strict();
-const JDIndexFileSchema = z.object({
-  created: z.iso.datetime(),
-  updated: z.iso.datetime(),
-  entries: z.record(z.string(), JDEntrySchema),
-});
-
-export type JDType = z.infer<typeof JDTypeSchema>;
-export type JDEntry = z.infer<typeof JDEntrySchema>;
-export type JDIndex = Record<string, JDEntry>;
-export type JDIndexFile = z.infer<typeof JDIndexFileSchema>;
 
 export interface JDSearchResult {
   key: string;
@@ -153,7 +135,7 @@ export function searchIndex(index: JDIndex, type: JDType, term: string): JDSearc
 export interface CheckResult {
   invalidEntries: Array<{ key: string; error: string }>;
   orphanParents: Array<{ key: string; parent: string }>;
-  missingOnDisk: string[];
+  missingOnDisk: Array<{ key: string; name: string }>;
   missingInIndex: Array<{ key: string; name: string; type: JDType }>;
 }
 
@@ -164,30 +146,40 @@ export interface CheckResult {
 export function checkIndex(rootFolder: string, index: JDIndex, rawFile?: unknown): CheckResult {
   const result: CheckResult = { invalidEntries: [], orphanParents: [], missingOnDisk: [], missingInIndex: [] };
 
-  // Check file-level structure (created/updated timestamps)
+  // Single parse of the full file — partitioned by path into file-level and per-entry issues.
+  const invalidKeys = new Set<string>();
   if (rawFile !== undefined) {
     const parsed = JDIndexFileSchema.safeParse(rawFile);
     if (!parsed.success) {
-      result.invalidEntries.push({ key: "<file>", error: parsed.error.issues[0].message });
+      const entryErrors = new Map<string, string[]>();
+      for (const issue of parsed.error.issues) {
+        if (issue.path[0] === "entries" && typeof issue.path[1] === "string") {
+          const key = issue.path[1];
+          const msgs = entryErrors.get(key) ?? [];
+          msgs.push(issue.message);
+          entryErrors.set(key, msgs);
+        } else {
+          result.invalidEntries.push({ key: "<file>", error: issue.message });
+        }
+      }
+      for (const [key, msgs] of entryErrors) {
+        invalidKeys.add(key);
+        for (const msg of msgs) {
+          result.invalidEntries.push({ key, error: msg });
+        }
+      }
     }
   }
 
-  // Check structural validity of each entry
+  // Check orphan parents and missing on disk (skip structurally invalid entries)
   for (const [key, entry] of Object.entries(index)) {
-    const parsed = JDEntrySchema.safeParse(entry);
-    if (!parsed.success) {
-      result.invalidEntries.push({ key, error: parsed.error.issues[0].message });
-    }
-  }
-
-  // Check orphan parents and missing on disk
-  for (const [key, entry] of Object.entries(index)) {
+    if (invalidKeys.has(key)) continue;
     if (entry.parent !== null && !(entry.parent in index)) {
       result.orphanParents.push({ key, parent: entry.parent });
     }
     const entryPath = resolveEntryPath(rootFolder, index, key);
     if (!fs.existsSync(entryPath)) {
-      result.missingOnDisk.push(key);
+      result.missingOnDisk.push({ key, name: entry.name });
     }
   }
 
